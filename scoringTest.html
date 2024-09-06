@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Scoring Test</title>
+</head>
+
+<body>
+    <h3>What is the original source text?</h3>
+    <div id = "context_div">&nbsp;</div>
+    <h3>What is the question posed to the student?</h3>
+    <div id = "question_div">&nbsp;</div>
+    <h3>What is the student's response?</h3>
+    <div id = "student_response_div">&nbsp;</div>
+    <h3>What are the evaluation scores?</h3>
+    <div id = "response_div">&nbsp;</div>
+    <script>
+        var context_txt = "The Ghana Empire, in particular, grew rich from the trans-Sahara trade. It certainly helped that the empire had control over the three major gold fields to the south of them. As such, Ghana was referred to by traders as \"the Land of Gold,\" and the kings of Ghana were sometimes called \"the Lords of the Gold.\" As a result, the empire flourished. The king of Ghana had a monopoly on all gold nuggets that were found in the mines. The people were allowed to trade in gold dust, but had to turn over any gold nuggets to the government. As such, the state became very powerful as well, adding to the complexity of Ghana&apos;s agrarian civilization.";
+        var question_txt = "Explain this text in your own words.";
+        var student_response_txt = "the Ghana empire became wealthy and powerful through control of trans Sahara trade routes and rich gold fields. This was known as the land of gold which was referred to as the lords of the gold by empire kings because they had monopoly on gold nuggets. people were able to trade gold dust, but it had to be given gold nuggets to the government. This policy made the state very powerful and helped the empires society."
+        document.getElementById('context_div').innerHTML = context_txt;
+        document.getElementById('question_div').innerHTML = question_txt;
+        document.getElementById('student_response_div').innerHTML = student_response_txt;
+        async function getData() {
+            const url = "https://chat.readerbench.com/score/summary";
+            const theheaders = new Headers();
+            theheaders.append("Content-Type", "application/json");
+            try {
+                const response = await fetch(url, {
+                    method: "POST",
+                    headers: theheaders,
+                    body: JSON.stringify({
+                        "context": context_txt,
+                        "question": question_txt,
+                        "student_response": student_response_txt
+                    }),
+                });
+                if (!response.ok) {
+                    throw new Error(`Response status: ${response.status}`);
+                }
+                const json = await response.json();
+                console.log(json);
+                document.getElementById('response_div').innerHTML = JSON.stringify(json);
+            } catch (error) {
+                console.error(error.message);
+            }
+        }
+        getData();
+    </script>
+</body>

@@ -1,0 +1,99 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://unpkg.com/jspsych@7.3.4"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-html-button-response@1.1.3"></script>
+    <!--<script src="https://unpkg.com/@jspsych/plugin-survey-text@1.1.3"></script> !-->
+    <script src="https://unpkg.com/@jspsych/plugin-preload@1.1.3"></script>
+    <link rel="stylesheet" href="https://unpkg.com/jspsych@7.3.4/css/jspsych.css" />
+	<script src="plugin-paraphrase.js"></script>
+	<link rel="stylesheet" href="plugin-paraphrase.css" />
+	<script src="wordvecs10000.js"></script>
+  </head>
+  <body></body>
+  <script>
+	  
+      const jsPsych = initJsPsych();
+
+      const preload = {
+        type: jsPsychPreload,
+        images: []
+      }
+
+      const trial = {
+        type: jsPsychSurveyText,
+        preamble: ``,
+        questions: [
+          {prompt: `When Matti married Lissa, he thought she was the pleasantest woman in the world. Before long, however, Lissa began to show her true character. Headstrong as a goat she was, and set on having her own way in everything. All Matti wanted was peace in the house. He spoke pleasantly to Lissa, and he nagged and fussed. No matter what he said or did, Lissa continued to be stubborn and pig-headed. Matti was miserable. 'If only we could have a party, I'd feel happier,' he thought.`, name: 'folktale1.1', rows: 5},
+		  {prompt: `He went to Lissa one day when she seemed to be in a good mood. 'Dear wife, wouldn't it be nice to have some company?' he asked. 'Guests are too much trouble,’ she snorted. Matti realized that if he wanted a party, then he'd have to trick her. A couple of weeks later, he said to Lissa, 'The holidays are coming. But we're too poor to celebrate, because the harvest was bad this year. There has been too much rain.' 'We are not poor,' Lissa snapped. 'I'll bake the biggest holiday cake I've ever baked,' Lissa said. 'And don't you argue with me.' Matti smiled at his own cleverness. But all he said was, 'Well, if you serve meat, then we'll be ruined.’ 'Oh no, we shall have a stuffed pig for the holidays,' said Lissa. Matti pretended to sigh. He said, 'Well, Lissa, if you invite a lot of people that will be the end of us.' 'I won't have the food spoil,' jeered Lissa. 'We'll have lots of guests.’ `, name: 'folktale1.2', rows: 5},
+		  {prompt: `The day of the party came, and the guests arrived. They all ate and sang and shouted. Matti made more noise than any of his friends. Lissa began to suspect that she had been tricked and stormed out of the house. She headed toward the river and Matti ran after her. As Lissa neared the river, Matti noticed that some of the boards on the bridge were rotted through. The river was very wide. He called out to her, 'Step lightly, Lissa.' 'Hah!' shouted Lissa, 'I'll do as I please!’ She jumped with all her weight on the rotted timbers. The boards gave way and she fell into the river. The water was running swiftly downstream. Matti scratched his head and thought for a moment. He looked at the hole in the rotted timbers. Then he started running upstream. A fisherman saw him and asked, ’Why are you running upstream?' 'My wife fell into the river, and I'm afraid she has drowned.' 'Then you should search downriver, not up,' said the fisherman. 'You don't know my Lissa,' said Matti, 'all her life she has been pig-headed and stubborn. Even when she's dead, she's bound to go against the current.’`, name: 'folktale1.3', rows: 5},
+        ]
+      }
+
+      // New - Testing
+
+     
+
+      const timeline = [trial];
+
+      if (typeof jsPsych !== "undefined") {
+        jsPsych.run(generateDocsDemoTimeline(timeline, [preload]));
+      } else {
+        document.body.innerHTML = '<div style="text-align:center; margin-top:50%; transform:translate(0,-50%);">You must be online to view the plugin demo.</div>';
+      }
+
+      function generateDocsDemoTimeline(timeline, setup_timeline) {
+        let setup;
+        if (setup_timeline) {
+          setup = {
+            timeline: setup_timeline,
+      };
+        }
+
+    const start = {
+      type: jsPsychHtmlButtonResponse,
+      stimulus: "",
+      choices: ["Run demo"],
+    };
+
+    let run = 0;
+
+    let trial = {
+      timeline: timeline,
+      data: {
+        run: () => {
+          return run;
+        },
+      },
+    };
+
+    const show_data = {
+      type: jsPsychHtmlButtonResponse,
+      stimulus: `
+        <p style="margin-bottom:0px; font-weight: bold;">Trial data:</p>
+        <pre style="margin-top:0px; text-align:left; font-size:14px; line-height:1.3em;"></pre>`,
+      on_load: function () {
+        const trial_data = jsPsych.data.get().filter({ run: run }).ignore("run").values();
+        const trial_json = JSON.stringify(trial_data, null, 2);
+        jsPsych.getDisplayElement().querySelector("pre").innerText = trial_json;
+      },
+      choices: ["Repeat demo"],
+    };
+
+    const trial_loop = {
+      timeline: [trial, show_data],
+      loop_function: function () {
+        run++;
+        return true;
+      },
+    };
+
+    if (setup_timeline) {
+      return [setup, start, trial_loop];
+    } else {
+      return [start, trial_loop];
+    }
+  }
+  </script>
+</html>
