@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Learning Inferences
 
 
@@ -37,6 +36,4 @@ Primary function:
     - Auto-install dependancies
 
 
-=======
-# Learning-Inferences
->>>>>>> c4b842556702d10d7be0678ff8b93b31f03f899e
+
