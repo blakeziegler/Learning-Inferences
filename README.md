@@ -34,6 +34,8 @@ Primary function:
 - migrate to docker container
     - Consistency across environments
     - Auto-install dependancies
+- create/optimize ETL pipeline
+    - Extract from submission -> Transform Data for Analysis -> Move to accessable databank
 
 
 
