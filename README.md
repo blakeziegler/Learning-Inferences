@@ -26,7 +26,13 @@ Primary function:
     - Measures response time 
     - Saves data and moves to the next trial
 
-- Cleans user input 
+- Cleans user input
+    - lower case, split into words, filters for words in vector map
+
+- 'checkIt' function:
+    - Notifies the user of current similarity score
+    - Keeps following text obfuscated until sim score > 80%
+    - Enables the submission button when sim score >80%
 
 ### Ideas  
 
