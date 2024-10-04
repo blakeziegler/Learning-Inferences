@@ -1,0 +1,23 @@
+1.	JavaScript Class Structure: Plugins must be JavaScript classes, implementing a constructor(), a trial() method, and a static info property.
+
+2.	Constructor: The constructor() accepts an instance of the jsPsych class and stores it for future reference.
+
+3.	Trial Method:
+    •	Receives three parameters:
+    1.	display_element (HTMLElement) – for rendering content.
+    2.	trial (object) – containing trial-specific parameters.
+    3.	(Optional) on_load – a callback function for asynchronous operations.
+•	Calls jsPsych.finishTrial(data) to complete the trial and save data.
+
+4.	Static Info Property:
+    •	Defines metadata for the plugin, including:
+    •	Plugin name, version, parameters, and data.
+    •	The parameters object specifies parameter types and defaults.
+    •	The data object describes the data generated during trials.
+
+5.	Plugin Functionality:
+	•	Plugins can dynamically modify the DOM, handle events, and perform asynchronous tasks. They should use jsPsych.pluginAPI.setTimeout() for timed events and jsPsych.pluginAPI.getKeyboardResponse() for keyboard interactions.
+
+6.	Ending Trials: Trials must end by calling jsPsych.finishTrial(data) or returning a data object when the trial() method is async.
+
+7.	Simulation Support (Optional): Plugins may implement a simulate() function to support experiment simulations in “data-only” or “visual” modes.
