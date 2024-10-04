@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "es2015", // or "es6", "esnext", etc.
+    "module": "commonjs", // or your chosen module system
+    "lib": [
+      "es2015", // Ensures Set, Map, etc. are available
+      "dom" // Include DOM types
+    ],
+    "typeRoots": [
+      "./node_modules/@types", // Default types
+      "./" // Custom types if you created a jspsych.d.ts
+    ],
+    "strict": true, // Enable all strict type-checking options
+    "esModuleInterop": true, // Allows default imports from CommonJS modules
+    "skipLibCheck": true // Skip type checking for declaration files (optional)
+  },
+  "include": [
+    "SummaryGrader.ts", // Adjust this to include your source files
+    "jspsych.d.ts" // Include the jspsych type declarations if you created one
+  ],
+  "exclude": [
+    "node_modules", // Exclude node_modules
+  ]
+}
