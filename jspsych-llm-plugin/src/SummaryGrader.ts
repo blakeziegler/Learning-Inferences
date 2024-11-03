@@ -1,4 +1,4 @@
-import { JsPsych, JsPsychPlugin, ParameterType, TrialType } from 'jspsych';
+import { JsPsych, JsPsychPlugin, ParameterType, TrialType } from "jspsych";
 
 interface SummarizedGraderPluginTrial {
     questions: {
@@ -85,18 +85,16 @@ const info = <const>{
     },
 };
 
-class SummarizedGraderPlugin implements JsPsychPlugin {
+class SummarizedGraderPluginVector implements JsPsychPlugin<typeof info> {
     static info = info;
 
     private jsPsych: JsPsych;
-    private question_data: any[] = [];
 
     constructor(jsPsych: JsPsych) {
         this.jsPsych = jsPsych;
     }
 
-    trial(display_element: HTMLElement, trial: TrialType<SummarizedGraderPluginTrial>) {
-        // Render questions
+    trial(display_element: HTMLElement, trial: TrialType<typeof info['parameters']>) {
         let html = '';
 
         if (trial.preamble !== null) {
@@ -104,7 +102,7 @@ class SummarizedGraderPlugin implements JsPsychPlugin {
         }
 
         html += `<form id="jspsych-summarized-grader-form" ${trial.autocomplete ? '' : 'autocomplete="off"'}>`;
-        
+
         let question_order = trial.questions.map((_, i) => i);
         if (trial.randomize_question_order) {
             question_order = this.jsPsych.randomization.shuffle(question_order);
@@ -114,7 +112,7 @@ class SummarizedGraderPlugin implements JsPsychPlugin {
             const question = trial.questions[index];
             html += `<div id="jspsych-summarized-grader-${index}" class="jspsych-summarized-grader-question" style="margin: 2em 0em;">
                         <p class="jspsych-summarized-grader">${question.prompt}</p>
-                        <textarea id="input-${index}" name="#jspsych-summarized-grader-response-${index}" 
+                        <textarea id="input-${index}" name="jspsych-summarized-grader-response-${index}" 
                         cols="${question.columns}" rows="${question.rows}" 
                         placeholder="${question.placeholder}" ${question.required ? 'required' : ''}></textarea>
                      </div>`;
@@ -131,7 +129,7 @@ class SummarizedGraderPlugin implements JsPsychPlugin {
             const endTime = performance.now();
             const response_time = Math.round(endTime - startTime);
 
-            const question_data: Record<string, string> = {};
+            const question_data: Record<string, { response: string; similarity: number; response_time: number }> = {};
             trial.questions.forEach((_, i) => {
                 const response_element = display_element.querySelector(`#input-${i}`) as HTMLTextAreaElement;
                 const response = response_element.value;
@@ -188,4 +186,4 @@ class SummarizedGraderPlugin implements JsPsychPlugin {
     }
 }
 
-export default SummarizedGraderPlugin;
+export default SummarizedGraderPluginVector;
