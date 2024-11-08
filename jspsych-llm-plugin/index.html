@@ -7,11 +7,12 @@
   <script src="https://unpkg.com/@jspsych/plugin-html-button-response@1.1.3"></script>
   <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@1.1.3"></script>
   <link rel="stylesheet" href="https://unpkg.com/jspsych@7.3.4/css/jspsych.css" />
-  <script src="src/SummaryGrader.ts"></script>
-  <!-- Include Your Plugin CSS -->
-  <link rel="stylesheet" href="css/plugin-summarize.css" />
   <!-- Include Word Vectors -->
   <script src="src/wordvecs10000.js"></script>
+  <!-- Include Your Compiled Plugin JavaScript -->
+  <script src="dist/index.js"></script>
+  <!-- Include Your Plugin CSS -->
+  <link rel="stylesheet" href="css/plugin-summarize.css" />
 </head>
 <body></body>
 <script>
@@ -24,9 +25,9 @@
     images: [],
   };
 
-  // Define the Mughal Text Trial using your refactored plugin
+  // Define the Mughal Text Trial using your plugin
   const mughal_text = {
-    type: SummarizedGraderPluginVector, // Use the name defined in your plugin's info.name
+    type: jsPsych.plugins['summarized-grader'], // Use the plugin object from jsPsych.plugins
     preamble: `Mughal Empire`,
     questions: [
       {
@@ -50,7 +51,7 @@
         rows: 5,
       },
     ],
-    wordVecs: wordVecs, // Assuming wordVecs is defined in wordvecs10000.js
+    wordVecs: wordVecs, // Ensure 'wordVecs' is defined globally in 'wordvecs10000.js'
   };
 
   // Start Button
@@ -64,7 +65,7 @@
   const show_data = {
     type: jsPsychHtmlButtonResponse,
     stimulus: `<p style="margin-bottom:0px; font-weight: bold;">Trial data:</p>
-                 <pre id="trial-data" style="margin-top:0px; text-align:left; font-size:14px; line-height:1.3em;"></pre>`,
+               <pre id="trial-data" style="margin-top:0px; text-align:left; font-size:14px; line-height:1.3em;"></pre>`,
     on_load: function () {
       const trial_data = jsPsych.data.get().last(1).values()[0];
       const trial_json = JSON.stringify(trial_data.response, null, 2);
