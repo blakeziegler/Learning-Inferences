@@ -1,37 +1,83 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Local Test</title>
-    <script src="https://unpkg.com/jspsych@7.3.4"></script>
-    <script src="https://unpkg.com/@jspsych/plugin-html-button-response@1.1.3"></script>
-    <script src="https://unpkg.com/@jspsych/plugin-preload@1.1.3"></script>
-    <link rel="stylesheet" href="https://unpkg.com/jspsych@7.3.4/css/jspsych.css" />
-    <script src="SummaryGrader.ts"></script>
-    <script src="wordvecs10000.js"></script>
+  <!-- Include jsPsych Library -->
+  <script src="https://unpkg.com/jspsych@7.3.4"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-preload@1.1.3"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-html-button-response@1.1.3"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@1.1.3"></script>
+  <link rel="stylesheet" href="https://unpkg.com/jspsych@7.3.4/css/jspsych.css" />
+  <!-- Include Word Vectors -->
+  <script src="src/wordvecs10000.js"></script>
+  <!-- Include Your Compiled Plugin JavaScript -->
+  <script src="dist/index.js"></script>
+  <!-- Include Your Plugin CSS -->
+  <link rel="stylesheet" href="css/plugin-summarize.css" />
 </head>
-<body>
-    <script>
-        const jsPsych = initJsPsych();
+<body></body>
+<script>
+  // Initialize jsPsych
+  const jsPsych = initJsPsych();
 
-        const preload = {
-            type: jsPsychPreload,
-            images: []
-        };
+  // Preload Images (if any)
+  const preload = {
+    type: jsPsychPreload,
+    images: [],
+  };
 
-        const mughal_text = {
-            type: jsPsychSummarizeText,
-            preamble: `Mughal Empire`,
-            questions: [
-                { prompt: `Zahir al-Din Muhammad Babur had always dreamed of founding a great empire...`, name: 'history1.1', rows: 5 },
-                { prompt: `Despite his desire to become ruler of India...`, name: 'history1.2', rows: 5 },
-                { prompt: `When Babur died in 1530, his eldest son Humayun inherited Mughal India...`, name: 'history1.3', rows: 5 },
-                { prompt: `Humayun’s fourteen-year-old son Akbar inherited the throne...`, name: 'history1.4', rows: 5 }
-            ]
-        };
+  // Define the Mughal Text Trial using your plugin
+  const mughal_text = {
+    type: jsPsych.plugins['summarized-grader'], // Use the plugin object from jsPsych.plugins
+    preamble: `Mughal Empire`,
+    questions: [
+      {
+        prompt: `Zahir al-Din Muhammad Babur had always dreamed of founding a great empire. His father...`,
+        name: 'history1.1',
+        rows: 5,
+      },
+      {
+        prompt: `Despite his desire to become ruler of India and his fascination with his new land, Babur did not adopt Indian culture...`,
+        name: 'history1.2',
+        rows: 5,
+      },
+      {
+        prompt: `When Babur died in 1530, his eldest son Humayun inherited Mughal India...`,
+        name: 'history1.3',
+        rows: 5,
+      },
+      {
+        prompt: `Humayun’s fourteen-year-old son Akbar inherited the throne...`,
+        name: 'history1.4',
+        rows: 5,
+      },
+    ],
+    wordVecs: wordVecs, // Ensure 'wordVecs' is defined globally in 'wordvecs10000.js'
+  };
 
-        const timeline = [preload, mughal_text];
+  // Start Button
+  const start = {
+    type: jsPsychHtmlButtonResponse,
+    stimulus: `<p>Welcome to the Mughal Empire Summary Task.</p>`,
+    choices: ["Start"],
+  };
 
-        jsPsych.run(timeline);
-    </script>
-</body>
+  // Show Trial Data
+  const show_data = {
+    type: jsPsychHtmlButtonResponse,
+    stimulus: `<p style="margin-bottom:0px; font-weight: bold;">Trial data:</p>
+               <pre id="trial-data" style="margin-top:0px; text-align:left; font-size:14px; line-height:1.3em;"></pre>`,
+    on_load: function () {
+      const trial_data = jsPsych.data.get().last(1).values()[0];
+      const trial_json = JSON.stringify(trial_data.response, null, 2);
+      document.getElementById("trial-data").innerText = trial_json;
+    },
+    choices: ["Repeat"],
+  };
+
+  // Define the Experiment Timeline
+  const timeline = [start, mughal_text, show_data];
+
+  // Run the Experiment
+  jsPsych.run(timeline);
+</script>
 </html>

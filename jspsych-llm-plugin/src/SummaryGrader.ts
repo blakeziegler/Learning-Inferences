@@ -1,5 +1,7 @@
-import { JsPsych, JsPsychPlugin, ParameterType, TrialType } from 'jspsych';
+// src/SummaryGrader.ts
 
+import { JsPsych, JsPsychPlugin, ParameterType, TrialType } from "jspsych";
+import { version } from "./package.json"
 interface SummarizedGraderPluginTrial {
     questions: {
         prompt: string;
@@ -18,6 +20,7 @@ interface SummarizedGraderPluginTrial {
 
 const info = <const>{
     name: 'summarized-grader',
+    version: version,
     parameters: {
         questions: {
             type: ParameterType.COMPLEX,
@@ -83,20 +86,31 @@ const info = <const>{
             default: {},
         },
     },
+    data: {
+        response: {
+            type: ParameterType.OBJECT,
+            pretty_name: 'Response Data',
+            default: {},
+        },
+        rt: {
+            type: ParameterType.INT,
+            pretty_name: 'Response Time',
+            default: null,
+        },
+    },
 };
+type Info = typeof info;
 
-class SummarizedGraderPlugin implements JsPsychPlugin {
+class SummarizedGraderPluginVector implements JsPsychPlugin<Info> {
     static info = info;
 
     private jsPsych: JsPsych;
-    private question_data: any[] = [];
 
     constructor(jsPsych: JsPsych) {
         this.jsPsych = jsPsych;
     }
 
-    trial(display_element: HTMLElement, trial: TrialType<SummarizedGraderPluginTrial>) {
-        // Render questions
+    trial(display_element: HTMLElement, trial: TrialType<Info>) {
         let html = '';
 
         if (trial.preamble !== null) {
@@ -104,17 +118,17 @@ class SummarizedGraderPlugin implements JsPsychPlugin {
         }
 
         html += `<form id="jspsych-summarized-grader-form" ${trial.autocomplete ? '' : 'autocomplete="off"'}>`;
-        
-        let question_order = trial.questions.map((_, i) => i);
+
+        let question_order = trial.questions!.map((_, i) => i);
         if (trial.randomize_question_order) {
             question_order = this.jsPsych.randomization.shuffle(question_order);
         }
 
         question_order.forEach((index) => {
-            const question = trial.questions[index];
+            const question = trial.questions![index];
             html += `<div id="jspsych-summarized-grader-${index}" class="jspsych-summarized-grader-question" style="margin: 2em 0em;">
                         <p class="jspsych-summarized-grader">${question.prompt}</p>
-                        <textarea id="input-${index}" name="#jspsych-summarized-grader-response-${index}" 
+                        <textarea id="input-${index}" name="jspsych-summarized-grader-response-${index}" 
                         cols="${question.columns}" rows="${question.rows}" 
                         placeholder="${question.placeholder}" ${question.required ? 'required' : ''}></textarea>
                      </div>`;
@@ -131,25 +145,27 @@ class SummarizedGraderPlugin implements JsPsychPlugin {
             const endTime = performance.now();
             const response_time = Math.round(endTime - startTime);
 
-            const question_data: Record<string, string> = {};
-            trial.questions.forEach((_, i) => {
-                const response_element = display_element.querySelector(`#input-${i}`) as HTMLTextAreaElement;
-                const response = response_element.value;
-                const original_text = display_element.querySelector(`#jspsych-summarized-grader-${i}`)?.textContent ?? '';
-                const similarity = this.getSimilarity(original_text, response, trial.wordVecs);
+            const question_data: Record<string, { response: string; similarity: number; response_time: number }> = {};
 
-                question_data[`Q${i}`] = {
+            trial.questions!.forEach((question, index) => {
+                const response_element = display_element.querySelector(`#input-${index}`) as HTMLTextAreaElement;
+                const response = response_element.value;
+                const original_text = question.prompt;
+                const similarity = this.getSimilarity(original_text, response, trial.wordVecs as { [key: string]: number[] } || {});                question_data[question.name || `Q${index + 1}`] = {
                     response,
                     similarity,
                     response_time,
                 };
             });
+            display_element.innerHTML = "";
 
-            this.jsPsych.finishTrial({ response: question_data });
+            this.jsPsych.finishTrial({
+                rt: response_time,
+                response: question_data,
+            });
         });
     }
-
-    getSimilarity(doc1: string, doc2: string, wordVecs: { [key: string]: number[] }): number {
+    private getSimilarity(doc1: string, doc2: string, wordVecs: { [key: string]: number[] }): number {
         const cleanDoc1 = this.cleanInput(doc1, wordVecs);
         const cleanDoc2 = this.cleanInput(doc2, wordVecs);
 
@@ -159,12 +175,12 @@ class SummarizedGraderPlugin implements JsPsychPlugin {
         return this.getCosSim(doc1vec, doc2vec);
     }
 
-    cleanInput(doc: string, wordVecs: { [key: string]: number[] }): string[] {
+    private cleanInput(doc: string, wordVecs: { [key: string]: number[] }): string[] {
         const normalizedText = doc.toLowerCase().replace(/[\d\W_]+/g, ' ');
         return normalizedText.split(/\s+/).filter(word => wordVecs.hasOwnProperty(word));
     }
 
-    averageVector(words: string[], wordVecs: { [key: string]: number[] }): number[] {
+    private averageVector(words: string[], wordVecs: { [key: string]: number[] }): number[] {
         const sumVector = new Array(300).fill(0);
         let count = 0;
 
@@ -172,20 +188,23 @@ class SummarizedGraderPlugin implements JsPsychPlugin {
             if (wordVecs[word]) {
                 count++;
                 const vec = wordVecs[word];
-                sumVector.forEach((_, index) => sumVector[index] += vec[index]);
+                for (let i = 0; i < sumVector.length; i++) {
+                    sumVector[i] += vec[i];
+                }
             }
         });
 
         return count === 0 ? sumVector : sumVector.map(val => val / count);
     }
 
-    getCosSim(vec1: number[], vec2: number[]): number {
+    private getCosSim(vec1: number[], vec2: number[]): number {
         const dotProduct = vec1.reduce((sum, val, idx) => sum + val * vec2[idx], 0);
         const mag1 = Math.sqrt(vec1.reduce((sum, val) => sum + val * val, 0));
         const mag2 = Math.sqrt(vec2.reduce((sum, val) => sum + val * val, 0));
 
-        return dotProduct / (mag1 * mag2);
+        return mag1 && mag2 ? dotProduct / (mag1 * mag2) : 0;
     }
 }
 
-export default SummarizedGraderPlugin;
+
+export default SummarizedGraderPluginVector;
