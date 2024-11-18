@@ -26,14 +26,6 @@ Primary function:
     - Measures response time 
     - Saves data and moves to the next trial
 
-- Cleans user input 
-
-### Ideas  
-
-- real-time data stream for instant feedback
-- migrate to docker container
-    - Consistency across environments
-    - Auto-install dependancies
 
 
 

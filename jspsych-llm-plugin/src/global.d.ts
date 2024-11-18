@@ -1,4 +1,3 @@
-// global.d.ts
 import { JsPsychPlugin } from "jspsych";
 
 declare global {

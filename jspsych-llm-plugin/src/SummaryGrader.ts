@@ -1,4 +1,3 @@
-// src/SummaryGrader.ts
 
 import { JsPsych, JsPsychPlugin, ParameterType, TrialType } from "jspsych";
 import { version } from "./package.json"
