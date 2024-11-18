@@ -26,22 +26,5 @@ Primary function:
     - Measures response time 
     - Saves data and moves to the next trial
 
-- Cleans user input
-    - lower case, split into words, filters for words in vector map
-
-- 'checkIt' function:
-    - Notifies the user of current similarity score
-    - Keeps following text obfuscated until sim score > 80%
-    - Enables the submission button when sim score >80%
-
-### Ideas  
-
-- real-time data stream for instant feedback
-- migrate to docker container
-    - Consistency across environments
-    - Auto-install dependancies
-- create/optimize ETL pipeline
-    - Extract from submission -> Transform Data for Analysis -> Move to accessable databank
-
 
 
