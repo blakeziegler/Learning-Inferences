@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Pilot</title>
+    <script src="https://unpkg.com/jspsych@7.3.4"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-preload@1.1.3"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-html-button-response@1.1.3"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@1.1.3"></script>
+    <link rel="stylesheet" href="https://unpkg.com/jspsych@7.3.4/css/jspsych.css" />
+    <script src="summarize/plugin-summarize.js"></script>
+    <link rel="stylesheet" href="summarize/plugin-summarize.css" />
+    <script src="summarize/wordvecs10000.js"></script>
+    <script src="multichoice/plugin-survey-multi-choice-feedback.js"></script>
+    <link rel="stylesheet" href="multichoice/plugin-survey-multi-choice-feedback.css" />
+    <script src="multichoice/questions.js"></script>
+    <script src="summarize/texts.js"></script>
+
+  </head>
+
+  <body>
+
+    <script>
+
+      const jsPsych = initJsPsych();
+      
+      const preload = {
+              type: jsPsychPreload,
+              images: []
+            }
+        
+          const materials = {
+        science: [
+          { text: blood_cells_text, factQuestions: blood_cells_trial, inferenceQuestions: blood_cells_infer_trial },
+          { text: blood_pressure_text, factQuestions: blood_pressure_trial, inferenceQuestions: blood_pressure_infer_trial },
+          { text: kidneys_text, factQuestions: kidneys_trial, inferenceQuestions: kidneys_infer_trial }
+        ],
+        history: [
+          { text: mughal_text, factQuestions: mughal_trial, inferenceQuestions: mughal_infer_trial },
+          { text: greece_text, factQuestions: greece_trial, inferenceQuestions: greece_infer_trial },
+          { text: ghana_text, factQuestions: ghana_trial, inferenceQuestions: ghana_infer_trial }
+        ],
+        folktales: [
+          { text: clothes_text, factQuestions: clothes_trial, inferenceQuestions: clothes_infer_trial },
+          { text: feast_text, factQuestions: feast_trial, inferenceQuestions: feast_infer_trial },
+          { text: anansi_text, factQuestions: anansi_trial, inferenceQuestions: anansi_infer_trial }
+        ]
+      };
+      
+      function getRandomInt(max) {
+        return Math.floor(Math.random() * max);
+      }
+      
+      const selectedMaterials = {
+        /*science: materials.science[getRandomInt(3)],
+        history: materials.history[getRandomInt(3)],
+        folktales: materials.folktales[getRandomInt(3)]*/
+        science: materials.science[getRandomInt(materials.science.length)],
+        history: materials.history[getRandomInt(materials.history.length)],
+        folktales: materials.folktales[getRandomInt(materials.folktales.length)]
+      };
+
+
+      
+      const conditions = ['fact_then_fact', 'read_story_then_story'];
+      //const selectedCondition = conditions[getRandomInt(2)];
+      const selectedCondition = conditions[getRandomInt(conditions.length)];
+      
+      const trials = [];
+      
+      switch (selectedCondition) {
+        case 'fact_then_fact':
+          trials.push({ type: selectedMaterials.science.factQuestions.type,
+            preamble: selectedMaterials.science.factQuestions.preamble,
+            questions: selectedMaterials.science.factQuestions.questions,
+            randomize_response_order: selectedMaterials.science.factQuestions.randomize_response_order,
+            ask_for_summary: selectedMaterials.science.factQuestions.ask_for_summary, 
+            prompt: selectedMaterials.science.factQuestions.questions.prompt,
+            options: selectedMaterials.science.factQuestions.questions.options,
+            correct: selectedMaterials.science.factQuestions.questions.correct,
+            feedback_incorrect: selectedMaterials.science.factQuestions.questions.feedback_incorrect,
+            required: selectedMaterials.science.factQuestions.questions.required });
+          trials.push({ type: selectedMaterials.history.factQuestions.type,
+            preamble: selectedMaterials.history.factQuestions.preamble,
+            questions: selectedMaterials.history.factQuestions.questions,
+            randomize_response_order: selectedMaterials.history.factQuestions.randomize_response_order,
+            ask_for_summary: selectedMaterials.history.factQuestions.ask_for_summary,
+            prompt: selectedMaterials.history.factQuestions.questions.prompt,
+            options: selectedMaterials.history.factQuestions.questions.options,
+            correct: selectedMaterials.history.factQuestions.questions.correct,
+            feedback_incorrect: selectedMaterials.history.factQuestions.questions.feedback_incorrect,
+            required: selectedMaterials.history.factQuestions.questions.required  });
+          trials.push({ type: selectedMaterials.folktales.factQuestions.type,
+            preamble: selectedMaterials.folktales.factQuestions.preamble,
+            questions: selectedMaterials.folktales.factQuestions.questions,
+            randomize_response_order: selectedMaterials.folktales.factQuestions.randomize_response_order,
+            ask_for_summary: selectedMaterials.folktales.factQuestions.ask_for_summary,
+            prompt: selectedMaterials.folktales.factQuestions.questions.prompt,
+            options: selectedMaterials.folktales.factQuestions.questions.options,
+            correct: selectedMaterials.folktales.factQuestions.questions.correct,
+            feedback_incorrect: selectedMaterials.folktales.factQuestions.questions.feedback_incorrect,
+            required: selectedMaterials.folktales.factQuestions.questions.required  });
+          break;
+      
+          case 'read_story_then_story':
+          trials.push({ type: selectedMaterials.science.text.type, preamble: selectedMaterials.science.text.preamble, questions: selectedMaterials.science.text.questions });
+          trials.push({ type: selectedMaterials.history.text.type, preamble: selectedMaterials.history.text.preamble, questions: selectedMaterials.history.text.questions });
+          trials.push({ type: selectedMaterials.folktales.text.type, preamble: selectedMaterials.folktales.text.preamble, questions: selectedMaterials.folktales.text.questions });
+          break;
+      
+      }
+      
+      // Inference questions + MCQ - Need to randomize order
+      trials.push({ type: selectedMaterials.science.inferenceQuestions.type,
+        questions: selectedMaterials.science.inferenceQuestions.questions,
+        randomize_response_order: selectedMaterials.science.inferenceQuestions.randomize_response_order,
+        ask_for_summary: selectedMaterials.science.inferenceQuestions.ask_for_summary,
+        prompt: selectedMaterials.science.inferenceQuestions.questions.prompt,
+        options: selectedMaterials.science.inferenceQuestions.questions.options,
+        correct: selectedMaterials.science.inferenceQuestions.questions.correct,
+        required: selectedMaterials.science.inferenceQuestions.questions.required });
+      trials.push({ type: selectedMaterials.history.inferenceQuestions.type,
+        questions: selectedMaterials.history.inferenceQuestions.questions,
+        randomize_response_order: selectedMaterials.history.inferenceQuestions.randomize_response_order,
+        ask_for_summary: selectedMaterials.history.inferenceQuestions.ask_for_summary,
+        prompt: selectedMaterials.history.inferenceQuestions.questions.prompt,
+        options: selectedMaterials.history.inferenceQuestions.questions.options,
+        correct: selectedMaterials.history.inferenceQuestions.questions.correct,
+        required: selectedMaterials.history.inferenceQuestions.questions.required });
+      trials.push({ type: selectedMaterials.folktales.inferenceQuestions.type,
+        questions: selectedMaterials.folktales.inferenceQuestions.questions,
+        randomize_response_order: selectedMaterials.folktales.inferenceQuestions.randomize_response_order,
+        ask_for_summary: selectedMaterials.folktales.inferenceQuestions.ask_for_summary,
+        prompt: selectedMaterials.folktales.inferenceQuestions.questions.prompt,
+        options: selectedMaterials.folktales.inferenceQuestions.questions.options,
+        correct: selectedMaterials.folktales.inferenceQuestions.questions.correct,
+        required: selectedMaterials.folktales.inferenceQuestions.questions.required });
+
+
+      /* create timeline */
+         var timeline = trials;
+
+
+      if (typeof jsPsych !== "undefined") {
+        jsPsych.run(generateDocsDemoTimeline(timeline, [preload]));
+      } else {
+        document.body.innerHTML = '<div style="text-align:center; margin-top:50%; transform:translate(0,-50%);">You must be online to view the plugin demo.</div>';
+      }
+
+      function generateDocsDemoTimeline(timeline, setup_timeline) {
+        let setup;
+        if (setup_timeline) {
+          setup = {
+            timeline: setup_timeline,
+      };
+        }
+
+    const start = {
+      type: jsPsychHtmlButtonResponse,
+      stimulus: "",
+      choices: ["Run demo"],
+    };
+
+    let run = 0;
+
+    let trial = {
+      timeline: timeline,
+      data: {
+        run: () => {
+          return run;
+        },
+      },
+    };
+
+    const show_data = {
+      type: jsPsychHtmlButtonResponse,
+      stimulus: `
+        <p style="margin-bottom:0px; font-weight: bold;">Trial data:</p>
+        <pre style="margin-top:0px; text-align:left; font-size:14px; line-height:1.3em;"></pre>`,
+      on_load: function () {
+        const trial_data = jsPsych.data.get().filter({ run: run }).ignore("run").values();
+        const trial_json = JSON.stringify(trial_data, null, 2);
+        jsPsych.getDisplayElement().querySelector("pre").innerText = trial_json;
+      },
+      choices: ["Repeat demo"],
+    };
+
+    const trial_loop = {
+      timeline: [trial, show_data],
+      loop_function: function () {
+        run++;
+        return true;
+      },
+    };
+
+    if (setup_timeline) {
+      return [setup, start, trial_loop];
+    } else {
+      return [start, trial_loop];
+    }
+  }
+      
+
+        </script>
+
+  </body>
+</html>

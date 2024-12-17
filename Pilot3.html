@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Pilot</title>
+  <script src="https://unpkg.com/jspsych@7.3.4"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-preload@1.1.3"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-html-button-response@1.1.3"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@1.1.3"></script>
+  <link rel="stylesheet" href="https://unpkg.com/jspsych@7.3.4/css/jspsych.css" />
+  <script src="summarize/plugin-summarize.js"></script>
+  <link rel="stylesheet" href="summarize/plugin-summarize.css" />
+  <script src="summarize/wordvecs10000.js"></script>
+  <script src="multichoice/plugin-survey-multi-choice-feedback.js"></script>
+  <link rel="stylesheet" href="multichoice/plugin-survey-multi-choice-feedback.css" />
+  <script src="multichoice/questions.js"></script>
+  <script src="summarize/texts.js"></script>
+
+</head>
+
+<body>
+
+  <script>
+
+    const jsPsych = initJsPsych();
+
+    const preload = {
+      type: jsPsychPreload,
+      images: []
+    }
+
+    const materials = {
+      science: [
+        { text: blood_cells_text, factQuestions: blood_cells_trial, inferenceQuestions: blood_cells_infer_trial },
+        { text: blood_pressure_text, factQuestions: blood_pressure_trial, inferenceQuestions: blood_pressure_infer_trial },
+        { text: kidneys_text, factQuestions: kidneys_trial, inferenceQuestions: kidneys_infer_trial }
+      ],
+      history: [
+        { text: mughal_text, factQuestions: mughal_trial, inferenceQuestions: mughal_infer_trial },
+        { text: greece_text, factQuestions: greece_trial, inferenceQuestions: greece_infer_trial },
+        { text: ghana_text, factQuestions: ghana_trial, inferenceQuestions: ghana_infer_trial }
+      ],
+      folktales: [
+        { text: clothes_text, factQuestions: clothes_trial, inferenceQuestions: clothes_infer_trial },
+        { text: feast_text, factQuestions: feast_trial, inferenceQuestions: feast_infer_trial },
+        { text: anansi_text, factQuestions: anansi_trial, inferenceQuestions: anansi_infer_trial }
+      ]
+    };
+
+    function getRandomInt(max) {
+      return Math.floor(Math.random() * max);
+    }
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    const selectedMaterials = {
+      science: materials.science[getRandomInt(materials.science.length)],
+      history: materials.history[getRandomInt(materials.history.length)],
+      folktales: materials.folktales[getRandomInt(materials.folktales.length)]
+    };
+
+    const trials = [];
+
+    const keys = Object.keys(selectedMaterials);
+    shuffle(keys);
+
+    Object.keys(selectedMaterials).forEach(key => {
+      //const selectedMaterial = selectedMaterials[key];
+
+      var condition = ['fact_then_fact', 'read_story_then_story'][getRandomInt(2)];
+      //const selectedCondition = conditions[getRandomInt(conditions.length)];
+      //selectedCondition
+
+      switch (condition) {
+        case 'fact_then_fact':
+          keys.forEach(key => {
+            trials.push({
+              type: selectedMaterials[key].factQuestions.type,
+              preamble: selectedMaterials[key].factQuestions.preamble,
+              questions: selectedMaterials[key].factQuestions.questions,
+              randomize_response_order: selectedMaterials[key].factQuestions.randomize_response_order,
+              ask_for_summary: selectedMaterials[key].factQuestions.ask_for_summary,
+              prompt: selectedMaterials[key].factQuestions.questions.prompt,
+              options: selectedMaterials[key].factQuestions.questions.options,
+              correct: selectedMaterials[key].factQuestions.questions.correct,
+              feedback_incorrect: selectedMaterials[key].factQuestions.questions.feedback_incorrect,
+              required: selectedMaterials[key].factQuestions.questions.required
+            });
+          });
+          break;
+
+        case 'read_story_then_story':
+          keys.forEach(key => {
+            trials.push({
+              type: selectedMaterials[key].text.type,
+              preamble: selectedMaterials[key].text.preamble,
+              questions: selectedMaterials[key].text.questions
+            });
+          });
+          break;
+
+      }
+    });
+
+
+    // Inference questions
+    var inferenceQsEnd = [];
+    keys.forEach(key => {
+      inferenceQsEnd.push({
+        type: selectedMaterials[key].inferenceQuestions.type,
+        questions: selectedMaterials[key].inferenceQuestions.questions,
+        randomize_response_order: selectedMaterials[key].inferenceQuestions.randomize_response_order,
+        ask_for_summary: selectedMaterials[key].inferenceQuestions.ask_for_summary,
+        prompt: selectedMaterials[key].inferenceQuestions.questions.prompt,
+        options: selectedMaterials[key].inferenceQuestions.questions.options,
+        correct: selectedMaterials[key].inferenceQuestions.questions.correct,
+        required: selectedMaterials[key].inferenceQuestions.questions.required
+      });
+    });
+
+    // MCQ
+    var factQsEnd = [];
+    keys.forEach(key => {
+      factQsEnd.push({
+        type: selectedMaterials[key].factQuestions.type,
+        preamble: selectedMaterials[key].factQuestions.preamble,
+        questions: selectedMaterials[key].factQuestions.questions,
+        randomize_response_order: selectedMaterials[key].factQuestions.randomize_response_order,
+        ask_for_summary: selectedMaterials[key].factQuestions.ask_for_summary,
+        prompt: selectedMaterials[key].factQuestions.questions.prompt,
+        options: selectedMaterials[key].factQuestions.questions.options,
+        correct: selectedMaterials[key].factQuestions.questions.correct,
+        feedback_incorrect: selectedMaterials[key].factQuestions.questions.feedback_incorrect,
+        required: selectedMaterials[key].factQuestions.questions.required
+      });
+    });
+
+    //End Questions randomization block
+    var endQuestions = jsPsych.randomization.sampleWithoutReplacement([inferenceQsEnd, factQsEnd], 2);
+
+    //add to trials
+
+    trials.push(endQuestions);
+
+    /* create timeline */
+    var timeline = trials;
+
+
+    if (typeof jsPsych !== "undefined") {
+      jsPsych.run(generateDocsDemoTimeline(timeline, [preload]));
+    } else {
+      document.body.innerHTML = '<div style="text-align:center; margin-top:50%; transform:translate(0,-50%);">You must be online to view the plugin demo.</div>';
+    }
+
+    function generateDocsDemoTimeline(timeline, setup_timeline) {
+      let setup;
+      if (setup_timeline) {
+        setup = {
+          timeline: setup_timeline,
+        };
+      }
+
+      const start = {
+        type: jsPsychHtmlButtonResponse,
+        stimulus: "",
+        choices: ["Run demo"],
+      };
+
+      let run = 0;
+
+      let trial = {
+        timeline: timeline,
+        data: {
+          run: () => {
+            return run;
+          },
+        },
+      };
+
+      const show_data = {
+        type: jsPsychHtmlButtonResponse,
+        stimulus: `
+        <p style="margin-bottom:0px; font-weight: bold;">Trial data:</p>
+        <pre style="margin-top:0px; text-align:left; font-size:14px; line-height:1.3em;"></pre>`,
+        on_load: function () {
+          const trial_data = jsPsych.data.get().filter({ run: run }).ignore("run").values();
+          const trial_json = JSON.stringify(trial_data, null, 2);
+          jsPsych.getDisplayElement().querySelector("pre").innerText = trial_json;
+        },
+        choices: ["Repeat demo"],
+      };
+
+      const trial_loop = {
+        timeline: [trial, show_data],
+        loop_function: function () {
+          run++;
+          return true;
+        },
+      };
+
+      if (setup_timeline) {
+        return [setup, start, trial_loop];
+      } else {
+        return [start, trial_loop];
+      }
+    }
+
+
+  </script>
+
+</body>
+
+</html>

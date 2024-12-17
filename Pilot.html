@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Pilot</title>
+  <script src="https://unpkg.com/jspsych@7.3.4"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-preload@1.1.3"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-html-button-response@1.1.3"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-survey-html-form@1.0.3"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@1.1.3"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-survey-text@1.1.3"></script>
+  <link rel="stylesheet" href="https://unpkg.com/jspsych@7.3.4/css/jspsych.css" />
+  <script src="summarize/plugin-summarize.js"></script>
+  <link rel="stylesheet" href="summarize/plugin-summarize.css" />
+  <script src="summarize/wordvecs10000.js"></script>
+  <script src="multichoice/plugin-survey-multi-choice-feedback.js"></script>
+  <link rel="stylesheet" href="multichoice/plugin-survey-multi-choice-feedback.css" />
+  <script src="multichoice/questions.js"></script>
+  <script src="summarize/texts.js"></script>
+
+  <style>
+    .footnote {
+      text-align: left;
+      font-size: small;
+      /* or specify a size like 12px or 0.8em */
+    }
+  </style>
+
+</head>
+
+<body>
+
+  <script>
+
+    /* create timeline */
+    var timeline = [];
+
+    var jsPsych = initJsPsych({
+      on_finish: function () {
+        // jsPsych.data.displayData();
+        // var experiment_data = jsPsych.data.get();
+        // var filename = "session-" + pid;
+        // saveData(filename, experiment_data.csv());
+        window.location.href = completionURL;
+      }
+    });
+
+    /* Get participant's ID */
+    var pid = jsPsych.data.getURLVariable("pid");
+    if (pid == "" || pid == null || pid == undefined) {
+      pid = "NO_ID_" + jsPsych.randomization.randomID(20);
+    }
+    jsPsych.data.addProperties({ subject: pid });
+
+    /* Completion */
+    var completionURL = "https://iub-pbs-credit.sona-systems.com/webstudy_credit.aspx?experiment_id=861&credit_token=ea7a756dae99455bb2f3550252250661&survey_code=";
+    completionURL += pid;
+
+    /* Save data */
+    function saveData(name, data_in) {
+      var url = "write_data.php";
+      var data_to_send = { filename: name, filedata: data_in };
+      fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(data_to_send),
+        headers: new Headers({
+          'Content-Type': 'application/json'
+        })
+      });
+    }
+
+    const preload = {
+      type: jsPsychPreload,
+      images: []
+    }
+
+    // Create Materials
+    const materials = {
+      science: [
+        { text: blood_cells_text, factQuestions: blood_cells_trial, inferenceQuestions: blood_cells_infer_trial, endQuestions: blood_cells_end_trial },
+        { text: blood_pressure_text, factQuestions: blood_pressure_trial, inferenceQuestions: blood_pressure_infer_trial, endQuestions: blood_pressure_end_trial },
+        { text: kidneys_text, factQuestions: kidneys_trial, inferenceQuestions: kidneys_infer_trial, endQuestions: kidneys_end_trial }
+      ],
+      history: [
+        { text: mughal_text, factQuestions: mughal_trial, inferenceQuestions: mughal_infer_trial, endQuestions: mughal_end_trial },
+        { text: greece_text, factQuestions: greece_trial, inferenceQuestions: greece_infer_trial, endQuestions: greece_end_trial },
+        { text: ghana_text, factQuestions: ghana_trial, inferenceQuestions: ghana_infer_trial, endQuestions: ghana_end_trial }
+      ],
+      folktales: [
+        { text: clothes_text, factQuestions: clothes_trial, inferenceQuestions: clothes_infer_trial, endQuestions: clothes_end_trial },
+        { text: feast_text, factQuestions: feast_trial, inferenceQuestions: feast_infer_trial, endQuestions: feast_end_trial },
+        { text: anansi_text, factQuestions: anansi_trial, inferenceQuestions: anansi_infer_trial, endQuestions: anansi_end_trial }
+      ]
+    };
+
+    //Randomization function
+    function getRandomInt(max) {
+      return Math.floor(Math.random() * max);
+    }
+
+    //Shuffle function
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    //Randomly select one story from each material type
+    const selectedMaterials = {
+      science: materials.science[getRandomInt(materials.science.length)],
+      history: materials.history[getRandomInt(materials.history.length)],
+      folktales: materials.folktales[getRandomInt(materials.folktales.length)]
+    };
+
+    const start = {
+      type: jsPsychHtmlButtonResponse,
+      stimulus: "",
+      choices: ["Start Experiment"],
+    };
+
+    timeline.push(start);
+
+    //Slide 1 - welcome screen
+    var welcome = {
+      type: jsPsychHtmlButtonResponse,
+      stimulus: `
+      <p>Welcome!</p>
+      <p>You are being invited to participate in a research study.</p>
+      <p>On the nest screen you'll see a description of the study.</p>
+      <p>Please read it carefully before agreeing to participate.</p>
+      `,
+      choices: ['Continue']
+    };
+
+    timeline.push(welcome);
+
+    //Slide 2 - SIS
+    var studyInfoSheet = {
+      type: jsPsychHtmlButtonResponse,
+      stimulus: `<div class="content-conatiner">
+        <h4>INDIANA UNIVERSITY STUDY INFORMATION SHEET FOR RESEARCH</h4>
+        <strong>How People Learn</strong>
+        <p align="left"><strong>You are being asked to participate in a research study.</strong> Scientists do research to answer important questions that might help change or improve the way we do things in the future. This document will give you information about the study to help you decide whether you want to participate. Please read this form, and ask any questions you have, before agreeing to be in the study.</p>
+        <p align="left"><strong>All research is voluntary.</strong> You can choose not to take part in this study. If you decide to participate, you can change your mind later and leave the study at any time. You will not be penalized or lose any benefits if you decide not to participate or choose to leave the study later.</p>
+        <p align="left"><strong>This research is intended for individual 18 years of age or older. If you are under age 18, do not complete the survey.</strong></p>
+        <p align="left"><strong>This research is for residents of the United States. If you are not a U.S. resident, do not complete the survey.</strong></p>
+        <p align="left"><strong>The purpose of this study</strong> is to understand how different ways of studying can affect how people learn, and what they remember.</p>
+        <p align="left">We are asking you if you want to be in this study because you have signed-up to participate in Sona. The study is being conducted by Dr. Benjamin Motz, in the Department of Psychological and Brain Sciences at Indiana University.</p>
+        <p align="left"><strong>If you agree to be in the study, you will do the following things.</strong> You will be shown questions, short statements, and/or text passages, and you will be asked to respond to them. The researchers will be using a lot of different kinds of materials in this study, and you may see folktales, sections of science textbooks, social media posts, and/or historical narratives. After learning these materials, you will then be asked questions what you remember from the materials. You will also answer questions about yourself and your educational background. The full study will be conducted on a computer, and will take about 40 minutes.</p>
+        <p align="left"><strong>Before agreeing to participate, please consider the risks and potential benefits of taking part in this study.</strong> You may be uncomfortable while answering questions about the learning materials, or when being tested about what you remember. Some questions ask about your educational background, but you do not need to type any information that you do not want to share.  There is a risk someone outside the study team could get access to your research information from this study. More information about how we will protect your information to reduce this risk is below.</p>
+        <p align="left">We don&apos;t think you will have any personal benefits from taking part in this study, but we hope to learn things that will help researchers in the future.</p>
+        <p align="left"><strong>You will be paid for participating in this study.</strong> You will receive 1 credit in Sona for participating. If you choose not to participate in this study, you can earn credits by participating in a different study, or your Introductory Psychology teacher has provided alternative ways to earn research credits.<strong> There is no cost to participate in the study.</strong></p>
+        <p align="left"><strong>We will protect your information</strong> and make every effort to keep your personal information confidential, but we cannot guarantee absolute confidentiality. No information which could identify you will be shared in publications about this study.</p>
+        <p align="left">Your personal information may be shared outside the research study if required by law. We also may need to share your research records with other groups for quality assurance or data analysis. These groups include the Indiana University Institutional Review Board or its designees, and state or federal agencies who may need to access the research records (as allowed by law).</p>
+        <p align="left"><strong>If you have questions about the study or encounter a problem with the research</strong>, contact the researcher, Benjamin Motz, at bmotz@indiana.edu.</p>
+        <p align="left">For questions about your rights as a research participant, to discuss problems, complaints, or concerns about a research study, or to obtain information or to offer input, please contact the IU Human Research Protection Program office at 800-696-2949 or at <u class="blue">irb@iu.edu</u>.</p>
+        
+        <div class="footnote">
+          <p>IU IRB SIS for Study 22498 &ndash; Exempt v05.17.2024</p>
+        </div>
+          
+        <p style="text-align: center;">In consideration of the above information:</p> </div>
+        `,
+      choices: ['I agree to participate.', 'I do not agree to participate.'],
+      prompt: "",
+      on_finish: function (data) {
+        if (data.response == 1) {
+          jsPsych.endExperiment("Thank you for your time and consideration. <p>You may now close this browser window.");
+        }
+      },
+    };
+
+    timeline.push(studyInfoSheet);
+
+    //Slide 3 - Instructions
+    var overview1 = {
+      type: jsPsychHtmlButtonResponse,
+      stimulus: `
+      <p>In this experiment we'll ask you to learn about science concepts, folktales, and historical narratives.</p> 
+      <p>Toward the end, we'll ask you questions to see what you remember.</p>
+      <p><strong>Do not write down or copy anything in the experiment</strong>. We are interested in what you remember.</p>
+      <p>Also, please stay here throughout the study. If you need to take a break, there will be a chance about halfway through the experiment.</p>
+      <p>Please try hard to pay attention and to remember the material.</p>
+      <p>When you are ready, click the button below to start the first section.</p>
+      `,
+      choices: ['Continue']
+    };
+
+    timeline.push(overview1);
+
+    //set value of keys for later iteration
+    const keys = Object.keys(selectedMaterials);
+
+    //Shuffle order of keys so order of materials is randomized
+    shuffle(keys);
+
+    //Loop for conditions
+    //Object.keys(selectedMaterials).forEach(key => {
+    keys.forEach(key => {
+      //define selected material by key
+      const selectedMaterial = selectedMaterials[key];
+
+      //Randomize which conditions participant gets
+      var condition = ['fact_then_fact', 'read_story_then_story'][getRandomInt(2)];
+      //const selectedCondition = conditions[getRandomInt(conditions.length)];
+      //selectedCondition
+
+
+      // Slides 4, 5, 6, & 7
+      switch (condition) {
+        //Fact questions instructions and case
+        case 'fact_then_fact':
+          //instructions
+          var overviewFQ = {
+            type: jsPsychHtmlButtonResponse,
+            stimulus: `
+              <p>In this section, you will try to learn by answering 8 multiple choice questions and receiving feedback.</p>
+              <p>If you get a question wrong, you will be shown the correct answer.</p>
+              <p><strong>Read the correct answer, try to remember it, and mark the correct answer to proceed to the next question.</strong></p>
+              <p>After the questions, we will ask you to type your own short summary of the questions and their correct answers.</p>
+              <p>Try your best to write a summary of all the information in the questions and correct answers.</p>
+              <p>When you are ready, click the button below to begin.</p>
+              `,
+            choices: ['Continue']
+          };
+          timeline.push(overviewFQ);
+          timeline.push({
+            type: selectedMaterial.factQuestions.type,
+            preamble: selectedMaterial.factQuestions.preamble,
+            questions: selectedMaterial.factQuestions.questions,
+            randomize_response_order: selectedMaterial.factQuestions.randomize_response_order,
+            ask_for_summary: selectedMaterial.factQuestions.ask_for_summary,
+            prompt: selectedMaterial.factQuestions.questions.prompt,
+            options: selectedMaterial.factQuestions.questions.options,
+            correct: selectedMaterial.factQuestions.questions.correct,
+            feedback_incorrect: selectedMaterial.factQuestions.questions.feedback_incorrect,
+            required: selectedMaterial.factQuestions.questions.required
+          });
+          break;
+
+        case 'read_story_then_story':
+          //Summarize instructions and case
+          ///instructions 
+          overviewS = {
+            type: jsPsychHtmlButtonResponse,
+            stimulus: `<p>In this section, you will try to learn by writing a summary of short sections of text.</p>
+              <p>Read the text and try to write a summary of all the information shown.</p>
+              <p>If your summary is not close enough to the information in the text, you will be asked<br />
+                 to try to increase the similarity between your summary and the text before proceeding.</p>
+              <p>Try to remember the information in the text.</p>
+              <p>When you are ready, click the button below to begin.</p>
+              `,
+            choices: ['Continue']
+          };
+          timeline.push(overviewS);
+          timeline.push({
+            type: selectedMaterial.text.type,
+            preamble: selectedMaterial.text.preamble,
+            questions: selectedMaterial.text.questions
+          });
+          break;
+
+      }
+    })
+
+    //Slide 8 - Mid Point Break and Instructions
+    var overview2 = {
+      type: jsPsychHtmlButtonResponse,
+      stimulus: `<p>In this next section you will see multiple choice questions<br />
+        to measure what you remember from the topics so far.</p>
+      <p>If you need to, now would be a good time to take a short break.</p>
+      <p>When you are ready, click the button to proceed to the first set of questions. Try your best to provide the answers from memory.</p>
+      `,
+      choices: ['Continue']
+    };
+
+    timeline.push(overview2);
+
+    //Slides 9 & 10 Inference and Fact Questions
+
+    var inferenceQsEnd = [];
+    var factQsEnd = [];
+
+    keys.forEach(key => {
+
+      // Inference questions
+      inferenceQsEnd.push({
+        //type: selectedMaterials[key].inferenceQuestions.type,
+        type: jsPsychSurveyMultiChoiceFB,
+        preamble: selectedMaterials[key].inferenceQuestions.preamble,
+        questions: selectedMaterials[key].inferenceQuestions.questions,
+        randomize_response_order: selectedMaterials[key].inferenceQuestions.randomize_response_order,
+        ask_for_summary: selectedMaterials[key].inferenceQuestions.ask_for_summary,
+        prompt: selectedMaterials[key].inferenceQuestions.questions.prompt,
+        options: selectedMaterials[key].inferenceQuestions.questions.options,
+        correct: selectedMaterials[key].inferenceQuestions.questions.correct,
+        required: selectedMaterials[key].inferenceQuestions.questions.required
+      });
+
+      // MCQ
+      factQsEnd.push({
+        //type: selectedMaterials[key].endQuestions.type,
+        type: jsPsychSurveyMultiChoiceFB,
+        preamble: selectedMaterials[key].endQuestions.preamble,
+        questions: selectedMaterials[key].endQuestions.questions,
+        randomize_response_order: selectedMaterials[key].endQuestions.randomize_response_order,
+        ask_for_summary: selectedMaterials[key].endQuestions.ask_for_summary,
+        prompt: selectedMaterials[key].endQuestions.questions.prompt,
+        options: selectedMaterials[key].endQuestions.questions.options,
+        correct: selectedMaterials[key].endQuestions.questions.correct,
+        feedback_incorrect: selectedMaterials[key].endQuestions.questions.feedback_incorrect,
+        required: selectedMaterials[key].endQuestions.questions.required
+      });
+    });
+
+    var inferenceSet = {
+      timeline: inferenceQsEnd
+    };
+
+    var factSet = {
+      timeline: factQsEnd
+    };
+
+    var randomizedEndQuestions = jsPsych.randomization.sampleWithoutReplacement([inferenceSet, factSet], 2);
+
+    randomizedEndQuestions.forEach(set => {
+      timeline.push(set);
+    });
+
+
+    //Slide 11 - Open ended feedback question
+    var pFeedback = {
+      type: jsPsychSurveyText,
+      questions: [
+        { prompt: 'How did you feel about the questions that asked you to summarize?', rows: 5 }
+      ]
+    };
+
+
+    timeline.push(pFeedback);
+
+    //Demographic Questions
+
+    var DemographicQs = {
+      type: jsPsychSurveyHtmlForm,
+      preamble: `<div align="left"><p><strong>Please answer the following demographic questions.</strong></p><br></div>`,
+      html: `
+      <div align="left">
+            <p>What is your age (in years)? <input type="text" id="demo-age" name="age" size="10" /></p><br>
+            <p>Which of the following options best describes your gender identity?</p>
+          </div>
+          <div align="left" style="margin-left: 50px">
+            <p><input type="radio" id="Agendered" name="GenIdent" value="AGendered">
+            <label for="AGendered">Agendered</label></p>
+            <p><input type="radio" id="Female" name="GenIdent" value="Female">
+            <label for="Female">Female</label></p>
+            <p><input type="radio" id="Male" name="GenIdent" value="Male">
+            <label for="Male">Male</label></p>
+            <p><input type="radio" id="Non-binary" name="GenIdent" value="Non-binary">
+            <label for="Non-binary">Non-binary</label></p>
+            <p><input type="radio" id="Questioning" name="GenIdent" value="Questioning">
+            <label for="Questioning">Questioning or unsure</label></p>
+            <p><input type="radio" id="Other" name="GenIdent" value="Other">
+            <label for="Other">Other</label></p>
+            <p><input type="radio" id="ND" name="GenIdent" value="ND">
+            <label for="ND">Prefer not to disclose</label></p>
+          </div><br><hr><br>
+
+          <div align="left">
+            <p>Are you of Hispanic, Latino, or of Spanish origin?</p>
+          </div>
+          <div align="left" style="margin-left: 50px">
+            <p><input type="radio" id="SpanYes" name="Ethnicity" value="SpanYes">
+            <label for="SpanYes">Yes</label></p>
+            <p><input type="radio" id="SpanNo" name="Ethnicity" value="SpanNo">
+            <label for="SpanNo">No</label></p>
+            <p><input type="radio" id="SpanND" name="Ethnicity" value="SpanND">
+            <label for="SpanND">Prefer not to disclose</label></p>
+          </div><br><hr><br>
+          
+          <div align="left">
+            <p>How would you describe your race? (you may select multiple options by holding down the shift key while selecting)</p>
+          </div>                
+          <div align="left" style="margin-left: 50px">
+            <select name="Race" id="Demo-Race" multiple>
+              <option>American Indian or Alaska Native</option>
+              <option>Asian</option>
+              <option>African-American or Black</option>
+              <option>Native Hawaiian or Other Pacific Islander</option>
+              <option>White</option>
+              <option>Other</option>
+              <option>Prefer not to disclose</option>
+            </select>
+          </div><br>
+      `,
+    };
+
+    timeline.push(DemographicQs);
+
+    //Final - Completion and exit
+    var exitSlide = {
+      type: jsPsychHtmlButtonResponse,
+      stimulus: `<p>Thank you for participating.</p>
+      <p><strong>Click the button below to complete the study and receive your credit</strong>.</p>
+      `,
+      choices: ['Finish Experiment'],
+      on_load: function () {
+        var experiment_data = jsPsych.data.get();
+        var filename = "session-" + pid;
+        saveData(filename, experiment_data.csv());
+      }
+    };
+
+    timeline.push(exitSlide);
+
+    //if (typeof jsPsych !== "undefined") {
+    //  jsPsych.run(generateDocsDemoTimeline(timeline, [preload]));
+    //} else {
+    //  document.body.innerHTML = '<div style="text-align:center; margin-top:50%; transform:translate(0,-50%);">You must be online to view the plugin demo.</div>';
+    //}
+
+    //function generateDocsDemoTimeline(timeline, setup_timeline) {
+    //  let setup;
+    //  if (setup_timeline) {
+    //    setup = {
+    //      timeline: setup_timeline,
+    //    };
+    //  }
+    //}
+
+    // Run
+    jsPsych.run(timeline);
+
+  </script>
+
+</body>
+
+</html>
