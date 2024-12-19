@@ -41,21 +41,8 @@
         name: 'history1.2',
         rows: 5
       },
-      {
-        prompt: `When Babur died in 1530, his eldest son Humayun inherited Mughal India. Humayun’s reign was not a successful one. After only ten years, he was forced to flee after being defeated in battle by Sher Shah Suri, the ruler of the Indian state of Bihar. Humayun sought refuge at the court of the Safavid Shah Tahmasp in Persia, where he became deeply immersed in Persian culture. In 1555, he returned to India and won back his throne, but his victory was short-lived. Only a few months after retaking the Indian city of Delhi, Humayun died after tripping on a steep staircase.`,
-        name: 'history1.3',
-        rows: 5
-      },
-      {
-        prompt: `Humayun’s fourteen-year-old son Akbar inherited the throne. Although he was illiterate, possibly because of severe dyslexia, Akbar became the greatest of the Mughal emperors. Unlike his father and grandfather, who had remained oriented toward central Asia, Akbar embraced India. He actively sought to incorporate Indians, both Muslim and Hindu, into his kingdom. Although he was aggressive militarily and expanded the bounds of the Mughal Empire across the northern part of the subcontinent and into the central plains to the south, he allowed local rulers to retain control of their lands so long as they submitted to him.`,
-        name: 'history1.4',
-        rows: 5
-      }
     ],
     on_finish: function(data) {
-      // After all questions are done, store the participant's responses globally
-      // The data.response field contains an array of responses for each question
-      // Combine them into a single summary string or keep separate as needed
       let all_responses = data.response.map(r => r.response).join(" ");
       window.participant_summary = all_responses;
     }

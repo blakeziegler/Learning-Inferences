@@ -148,6 +148,7 @@ async function checkIt(q) {
     if (response.trim().split(/\s+/).length < 4) {
         document.getElementById("response-"+thisq).innerHTML = "Please provide a longer response";
         document.getElementById("response-"+thisq).style.color="red";
+        console.log(response);
         return;
     }
 
