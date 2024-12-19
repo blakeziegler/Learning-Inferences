@@ -9,33 +9,48 @@ var jsPsychSummarizeText = (function (jspsych) {
                 array: true,
                 default: undefined,
                 nested: {
+                    // Question prompt
                     prompt: { type: jspsych.ParameterType.HTML_STRING, default: undefined },
+                    // placeholder response test
                     placeholder: { type: jspsych.ParameterType.STRING, default: "" },
+                    // Rows
                     rows: { type: jspsych.ParameterType.INT, default: 1 },
+                    // Cols
                     columns: { type: jspsych.ParameterType.INT, default: 40 },
+                    // Response required boolean
                     required: { type: jspsych.ParameterType.BOOL, default: false },
+                    
                     name: { type: jspsych.ParameterType.STRING, default: "" }
                 }
             },
+            // Randomize questions if true
             randomize_question_order: {
                 type: jspsych.ParameterType.BOOL,
                 default: false
             },
+            // Display preamble (top of page)
             preamble: {
                 type: jspsych.ParameterType.HTML_STRING,
                 default: null
             },
+            // Button label
             button_label: {
                 type: jspsych.ParameterType.STRING,
                 default: "Continue"
             },
+            // Browser search auto-complete boolean
             autocomplete: {
                 type: jspsych.ParameterType.BOOL,
                 default: false
             }
         }
     };
-
+  /**
+   * **summarize-text** @author Ben Motz
+   *  -- built largely from **survey-text** @author Josh de Leeuw
+   *     @see {@link https://www.jspsych.org/plugins/jspsych-survey-text/ survey-text plugin documentation on jspsych.org}
+   *  -- refactored to support external api: @author Blake Ziegler
+   */
     class SummarizeTextPlugin {
         constructor(jsPsych) {
             this.jsPsych = jsPsych;
@@ -56,7 +71,8 @@ var jsPsychSummarizeText = (function (jspsych) {
             // start form
             html += trial.autocomplete ? '<form id="jspsych-summarize-text-form">' :
                                          '<form id="jspsych-summarize-text-form" autocomplete="off">';
-
+            
+            // generate question order                                            
             let question_order = [];
             for (let i = 0; i < trial.questions.length; i++) {
                 question_order.push(i);
@@ -64,6 +80,8 @@ var jsPsychSummarizeText = (function (jspsych) {
             if (trial.randomize_question_order) {
                 question_order = this.jsPsych.randomization.shuffle(question_order);
             }
+
+            // add questions
 
             for (let i = 0; i < trial.questions.length; i++) {
                 const q = trial.questions[question_order[i]];
@@ -114,6 +132,7 @@ var jsPsychSummarizeText = (function (jspsych) {
 
 var question_data = [];
 
+// response logic
 async function checkIt(q) {
     var thisq = q;
     var nextq = q+1;
@@ -139,33 +158,37 @@ async function checkIt(q) {
     document.getElementById("input-"+thisq).disabled = true;
     document.getElementById("submit-"+thisq).disabled = true;
 
-    // Call API for this single response
+    // call api, confirmation message
     document.getElementById("response-"+thisq).innerHTML = "Your response has been recorded. Evaluating...";
     let api_div = document.getElementById("api-result-"+thisq);
 
     try {
       const url = "https://chat.readerbench.com/score/summary";
       const headers = { "Content-Type": "application/json" };
-      // Send only this one response for evaluation, no combined summary
+      // set context, question and response
       const requestBody = {
         context: window.context_txt,
         question: window.question_txt,
         student_response: response
       };
 
+      // api post request
       const api_response = await fetch(url, {
         method: "POST",
         headers: headers,
         body: JSON.stringify(requestBody),
       });
 
+      // throw error if response fails
       if (!api_response.ok) {
         throw new Error(`API Error: ${api_response.status}`);
       }
 
+      // response -> json
       const json = await api_response.json();
       console.log("API Response:", json);
 
+      // response formatting
       api_div.innerHTML = "<pre>" + JSON.stringify(json, null, 2) + "</pre>";
       api_div.style.color = "blue";
     } catch (error) {
